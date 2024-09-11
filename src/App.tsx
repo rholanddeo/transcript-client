@@ -23,19 +23,16 @@ function App() {
 
   // Load CSV data from public folder
   useEffect(() => {
-    fetch('/podcast_gita_wirjawan.csv')
-      .then((response) => response.text())
-      .then((csvData) => {
-        Papa.parse(csvData, {
-          header: true,
-          skipEmptyLines: true,
-          delimiter: ';',
-          complete: (result) => {
-            setPodcasts(result.data as Podcast[]);
-          },
-        });
+    fetch('https://transcript-server-alpha.vercel.app/podcasts')
+      .then((response) => response.json())
+      .then((data) => {
+        setPodcasts(data as Podcast[]);
+      })
+      .catch((error) => {
+        console.error('Error fetching podcast data:', error);
       });
   }, []);
+  
 
   // Open the modal for a specific podcast
   const openModal = (podcast: Podcast) => {
