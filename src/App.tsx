@@ -23,12 +23,18 @@ function App() {
 
   // Load CSV data from public folder
   useEffect(() => {
-    fetch('http://localhost:3000/podcasts')
-      .then((response) => response.json())
-      .then((data) => {
-        setPodcasts(data);
-      })
-      .catch((error) => console.error('Error fetching podcasts:', error));
+    fetch('/podcast_gita_wirjawan.csv')
+      .then((response) => response.text())
+      .then((csvData) => {
+        Papa.parse(csvData, {
+          header: true,
+          skipEmptyLines: true,
+          delimiter: ';',
+          complete: (result) => {
+            setPodcasts(result.data as Podcast[]);
+          },
+        });
+      });
   }, []);
 
   // Open the modal for a specific podcast
@@ -44,28 +50,15 @@ function App() {
   };
 
   // Save transcript and close modal
-  const saveTranscript = () => {
-    // Merge podcast data with transcripts
-    const updatedData = podcasts.map((podcast) => ({
-      ...podcast,
-      Transcript: transcripts[podcast.id_podcast] || '',
-    }));
-  
-    // Send updated data to the server
-    fetch('http://localhost:3000/update-transcripts', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ updatedPodcasts: updatedData }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Successfully updated CSV on the server:', data);
-      })
-      .catch((error) => console.error('Error updating CSV:', error));
+  const saveTranscript = (transcript: string) => {
+    if (selectedPodcast) {
+      setTranscripts((prev) => ({
+        ...prev,
+        [selectedPodcast.id_podcast]: transcript,
+      }));
+    }
+    closeModal();
   };
-  
 
   // Download the updated CSV file
   const downloadCSV = () => {
